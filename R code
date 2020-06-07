@@ -1,0 +1,130 @@
+---
+title: "302 Project"
+author: "Lukas Naehrig, Suh Young Choi"
+date: "6/10/2020"
+output: html_document
+---
+``` {r setup}
+# setwd("C:/Users/lnaeh/Desktop/STAT 302/302 Project")
+library(tidyverse)
+```
+
+``` {r 6/1 - both}
+happy <- read_csv('happyData.csv')
+names(happy) <- str_replace_all(names(happy), c(' ' = ''))
+names(happy) <- str_replace_all(names(happy), c('\\(' = '', '\\)' = ''))
+head(happy, n = 10)
+
+#happy <-
+#  happy %>%
+#  mutate(LogEconomy = log(EconomyGDPperCapita))
+
+happinessModel <- lm(HappinessScore ~ EconomyGDPperCapita + Family + HealthLifeExpectancy, data = happy)
+happinessModel
+summary(happinessModel)
+plot(happinessModel)
+
+# extendedHappiness <- lm(HappinessScore ~ EconomyGDPperCapita + Family + HealthLifeExpectancy + Freedom + TrustGovernmentCorruption + Generosity, data = happy)
+# extendedHappiness
+```
+Scientific Question: How does the economy, family, and health status of certain countries influence the Happiness Score?
+According to our linear model regressing the happiness score with economy/GDP per capita, family, and life expectancy, we found that the Family standing/status is the most influential factor in a country's happiness score. On the contrary, the economy/GDP per capita was the least influential factor in this score. Life expectancy was in the middle between economy and family factors. This implies that family status has the most relative weight in determining happiness scores.
+
+
+``` {r 6/3 - Lukas}
+happyScore <- read_csv('happyScore.csv')
+happyCategories <- read_csv('happyCategories.csv')
+happyCategories <-
+  happyCategories %>%
+  rename('Country' = 'Country name',
+         'Log_GDP_per_Capita' = 'Log GDP per capita',
+         'Life_Expectancy' = 'Healthy life expectancy at birth',
+         'Freedom' = 'Freedom to make life choices',
+         'Social_Support' = 'Social support',
+         'Trust' = 'Confidence in national government')
+happyScore <-
+  happyScore %>%
+  rename('Happiness_Score' = 'Happiness score')
+
+head(happyCategories)
+head(happyScore)
+
+happyCategories2018 <- 
+  happyCategories %>%
+  filter(Year == 2018)
+
+happy <- inner_join(happyScore, happyCategories2018, by = 'Country')
+head(happy, 400)
+
+# Linear Model:
+
+happinessModel <- lm(Happiness_Score ~ Log_GDP_per_Capita + Social_Support + Life_Expectancy, data = happy)
+happinessModel
+summary(happinessModel)
+# plot(happinessModel)
+
+
+# Scatter plots:
+
+noNAHappy <- 
+  happy %>%
+  drop_na(Log_GDP_per_Capita)
+ggplot() + 
+  geom_point(data = noNAHappy, aes(x = Log_GDP_per_Capita, y = Happiness_Score))
+
+noNAHappy <-
+  noNAHappy %>%
+  drop_na(Life_Expectancy)
+ggplot() + 
+  geom_point(data = noNAHappy, aes(x = Life_Expectancy, y = Happiness_Score))
+
+noNAHappy <-
+  noNAHappy %>%
+  drop_na(Social_Support)
+ggplot() + 
+  geom_point(data = noNAHappy, aes(x = Social_Support, y = Happiness_Score))
+
+
+# Next: Time series graph
+# We only have happiness scores for 2018 though, so we need to decide which components we want to plot.
+
+happyUS <-
+  happyCategories %>%
+  filter(Country == 'United States')
+head(happyUS)
+  
+ggplot() +
+  geom_line(data = happyUS, aes(x = Year, y = Log_GDP_per_Capita, color = 'Country'))
+
+# Can we figure out a way to plot multiple countries?
+head(happyCategories)
+head(happyScore)
+head(happyCategories2018)
+
+# Q: Does happiness/factors depend on region more or more about individual countries? (Happiness ~ cultural value)
+# define 3-4 regions, define variable for region, ANOVA (linear model has to be nested), differences without losing predictive power/ reduce RSE? 
+# ANOVA more about -- inference, p-values, statistical significance
+
+# analyze predictive power with random forest (apredictive performance)
+```
+
+
+```{r 6/4 Suh Young}
+# I added the other years' worth of data to the project folder, in case we want to use those, too. We've got data from 2015-2019.
+
+# I could also arrange csv's of data by year from the big dataset you found. This gives us data from 2008-2018. Not sure if we need this yet, so I'll leave it in comments.
+
+# happy.comp <- read.csv("happyData.csv") 
+# happy.c.2018 <- happy.comp %>% filter(Year == '2018')
+# happy.c.2017 <- happy.comp %>% filter(Year == '2017')
+# happy.c.2016 <- happy.comp %>% filter(Year == '2016')
+# happy.c.2015 <- happy.comp %>% filter(Year == '2015')
+# happy.c.2014 <- happy.comp %>% filter(Year == '2014')
+# happy.c.2013 <- happy.comp %>% filter(Year == '2013')
+# happy.c.2012 <- happy.comp %>% filter(Year == '2012')
+# happy.c.2011 <- happy.comp %>% filter(Year == '2011')
+# happy.c.2010 <- happy.comp %>% filter(Year == '2010')
+# happy.c.2009 <- happy.comp %>% filter(Year == '2009')
+# happy.c.2008 <- happy.comp %>% filter(Year == '2008')
+
+```
